@@ -42,7 +42,6 @@ fabricModMetadata.depends.putAll(linkedMapOf(
     "fabricloader" to ">=${versionCatalog.version(VersionCatalogVersion.FabricLoader)}",
     "minecraft" to "~$minecraftVersion",
     "java" to ">=$javaVersion",
-    "fabric-api" to "*",
 ))
 
 fun defaultModMetadata(fabricDependencies: Map<String, String>) = linkedMapOf<String, Any?>(
@@ -66,6 +65,7 @@ fun defaultModMetadata(fabricDependencies: Map<String, String>) = linkedMapOf<St
         "main" to listOf(modFabricEntrypoint),
         "client" to listOf(modFabricClientEntrypoint),
     ),
+    "mixins" to listOf("$modId.mixins.json"),
     "depends" to fabricDependencies,
 )
 

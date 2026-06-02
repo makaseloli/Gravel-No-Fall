@@ -22,6 +22,7 @@ val forgeVersionRange: String by project
 val loaderVersionRange: String by project
 val parchmentMinecraftVersion: String by project
 val parchmentMappingsVersion: String by project
+val legacyForgeMixinConfig = project.findProperty("legacyForgeMixinConfig")?.toString() ?: "$modId.mixins.json"
 
 val forgeFullVersion = "$minecraftVersion-$forgeVersion"
 val commonProject = ":$minecraftVersion-common"
@@ -111,7 +112,7 @@ legacyForge {
 
 mixin {
     add(sourceSets.main.get(), "$modId.refmap.json")
-    config("$modId.mixins.json")
+    config(legacyForgeMixinConfig)
 }
 
 // When no @Mixin classes exist, the annotation processor generates no refmap/TSRG output.
@@ -162,5 +163,5 @@ legacyForge.ideSyncTask(generateModMetadata)
 tasks.jar {
     from(project(sharedCommonProject).sourceSets.main.get().output)
     from(project(commonProject).sourceSets.main.get().output)
-    manifest.attributes(mapOf("MixinConfigs" to "$modId.mixins.json"))
+    manifest.attributes(mapOf("MixinConfigs" to legacyForgeMixinConfig))
 }
