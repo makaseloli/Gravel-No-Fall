@@ -1,6 +1,6 @@
 plugins {
     id("neoforge-mod-conventions")
-    id("neoforge-config-conventions")
+    // id("neoforge-config-conventions")
 }
 
 // Mod Dependencies

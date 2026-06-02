@@ -1,6 +1,6 @@
 plugins {
     id("legacyforge-mod-conventions")
-    id("legacyforge-config-conventions")
+    // id("legacyforge-config-conventions")
 }
 
 val configuredVersion: String by project

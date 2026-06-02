@@ -1,7 +1,6 @@
 import net.meatwo310.mdk.build.VersionCatalogLibrary
 import net.meatwo310.mdk.build.library
 import net.meatwo310.mdk.build.module
-import net.meatwo310.mdk.build.supportsGameTestServer
 import net.meatwo310.mdk.build.versionCatalog
 
 plugins {

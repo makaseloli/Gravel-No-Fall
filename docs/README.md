@@ -31,6 +31,7 @@ Only the subprojects included in `settings.gradle.kts` are configured. Remove un
 - `src/configClient`: client-only config screen helpers for loaders that expose a config UI.
 - `buildSrc`: convention plugins that define loader-specific Gradle behavior.
 - `gradle.properties`: mod metadata shared by generated `mods.toml`, `neoforge.mods.toml`, and `fabric.mod.json` files.
+- `version.txt`: the mod version used for project versions, artifact names, and generated metadata.
 
 ## Setup
 
@@ -38,13 +39,13 @@ Only the subprojects included in `settings.gradle.kts` are configured. Remove un
 2. If you want to keep receiving template updates, initialize upstream tracking
    before regular development. See [Receiving Upstream Updates](#receiving-upstream-updates).
 3. Edit `settings.gradle.kts` and remove unused subprojects to reduce Gradle configuration time and cache usage.
-4. Edit `gradle.properties` for your mod id, name, version, group, license, authors, URLs, and Fabric entry points.
+4. Edit `gradle.properties` for your mod id, name, group, license, authors, URLs, and Fabric entry points, and edit `version.txt` for your mod version.
 5. Update Java package names, `Constants`, entry points, mixin config names, and language assets from `examplemod` to your mod id.
 6. Create a root `README.md` and `LICENSE` for your mod. Keep `docs/*.md` unchanged if you want future template updates to merge cleanly.
 
 ## Generated Metadata
 
-Fabric `fabric.mod.json` files are generated from shared values in `gradle.properties` and the Fabric convention plugin. The convention provides common fields such as the mod id, version, authors, contact URLs, environment, entry points, Java requirement, Minecraft requirement, Fabric API dependency, and optional Forge Config API Port dependency.
+Fabric `fabric.mod.json` files are generated from shared values in `gradle.properties`, `version.txt`, and the Fabric convention plugin. The convention provides common fields such as the mod id, version, authors, contact URLs, environment, entry points, Java requirement, Minecraft requirement, Fabric API dependency, and optional Forge Config API Port dependency.
 
 Each `<minecraft>-fabric/src/main/templates/fabric.mod.json` file is a small override JSON. Values written there are merged over the generated defaults, so use it for target-specific metadata or extra dependencies without duplicating the common metadata. Nested objects such as `depends` are merged recursively.
 
@@ -198,6 +199,35 @@ PlatformConfigRegistrar.registerAll(modContainer, VersionedConfigSpec.bindAll(co
 ## GitHub Actions
 
 The build workflow detects subprojects from `settings.gradle.kts`, builds each one independently, uploads loader artifacts, runs the available server or game-test smoke checks, and then launches a headless client runtime test with the produced jars. Note: Fabric Game Tests are configured through Fabric Loom and run as part of the Fabric `build` task.
+
+### Release CI
+
+The Release workflow builds every included platform project, collects the
+distribution jars, generates release notes from the commits since the latest
+`v*` tag, creates a new tag, and publishes a GitHub Release with the jars
+attached.
+
+To publish a release:
+
+1. Open **Actions** > **Release** > **Run workflow** on GitHub.
+2. Select the branch to release.
+3. Choose a version bump type and run the workflow.
+
+The available bump types are:
+
+| Type | Behavior |
+|------|----------|
+| `auto` | Select `major` for a breaking change (`!` or `BREAKING CHANGE:`), `minor` for `feat`, or `patch` otherwise. Commits with the `mdk` type are ignored. |
+| `none` | Publish the version already stored in `version.txt` without changing it. Commit and push the intended version before running the workflow. |
+| `patch` | Increment the patch version. |
+| `minor` | Increment the minor version. |
+| `major` | Increment the major version. |
+
+For any bump type except `none`, the workflow updates `version.txt`, commits the
+new version as `release: <version>`, and pushes the commit to the selected
+branch before building the release. Release notes include breaking changes,
+`feat`, `fix`, and `perf` commits. Template maintenance commits with the `mdk`
+type and other commit types are omitted.
 
 ## Receiving Upstream Updates
 
