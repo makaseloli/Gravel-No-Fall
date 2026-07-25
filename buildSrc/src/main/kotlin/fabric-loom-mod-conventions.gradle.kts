@@ -5,8 +5,8 @@ plugins {
     id("net.fabricmc.fabric-loom")
 }
 
-val modId: String by project
-val minecraftVersion: String by project
+val modId = project.property("modId").toString()
+val minecraftVersion = project.property("minecraftVersion").toString()
 
 val commonProject = ":$minecraftVersion-common"
 val sharedCommonProject = ":common"
@@ -19,15 +19,16 @@ loom {
         create(modId) {
             sourceSet(sourceSets.main.get())
             sourceSet(sourceSets.named("client").get())
-            sourceSet(project(sharedCommonProject).sourceSets.main.get())
             sourceSet(project(commonProject).sourceSets.main.get())
+            sourceSet(project(sharedCommonProject).sourceSets.main.get())
         }
     }
 
     runs.configureEach {
-        ideConfigGenerated(true)
+        generateRunConfig.set(true)
+        preferGradleTask.set(true)
         if (name == "gameTest") {
-            vmArg("-Dfabric.log.level=debug")
+            jvmArguments.add("-Dfabric.log.level=debug")
         }
     }
 }

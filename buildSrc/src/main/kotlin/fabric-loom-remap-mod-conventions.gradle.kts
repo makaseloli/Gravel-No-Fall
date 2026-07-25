@@ -8,10 +8,10 @@ plugins {
     id("net.fabricmc.fabric-loom-remap")
 }
 
-val modId: String by project
-val minecraftVersion: String by project
-val parchmentMinecraftVersion: String by project
-val parchmentMappingsVersion: String by project
+val modId = project.property("modId").toString()
+val minecraftVersion = project.property("minecraftVersion").toString()
+val parchmentMinecraftVersion = project.property("parchmentMinecraftVersion").toString()
+val parchmentMappingsVersion = project.property("parchmentMappingsVersion").toString()
 
 val commonProject = ":$minecraftVersion-common"
 val sharedCommonProject = ":common"
@@ -24,15 +24,16 @@ loom {
         create(modId) {
             sourceSet(sourceSets.main.get())
             sourceSet(sourceSets.named("client").get())
-            sourceSet(project(sharedCommonProject).sourceSets.main.get())
             sourceSet(project(commonProject).sourceSets.main.get())
+            sourceSet(project(sharedCommonProject).sourceSets.main.get())
         }
     }
 
     runs.configureEach {
-        ideConfigGenerated(true)
+        generateRunConfig.set(true)
+        preferGradleTask.set(true)
         if (name == "gameTest") {
-            vmArg("-Dfabric.log.level=debug")
+            jvmArguments.add("-Dfabric.log.level=debug")
         }
     }
 }

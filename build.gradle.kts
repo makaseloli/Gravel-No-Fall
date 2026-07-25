@@ -5,6 +5,7 @@ import org.gradle.plugins.ide.idea.model.IdeaModel
 plugins {
     id("net.fabricmc.fabric-loom") apply false
     id("net.fabricmc.fabric-loom-remap") apply false
+    id("net.minecraftforge.gradle") apply false
     id("net.neoforged.moddev") apply false
     id("net.neoforged.moddev.legacyforge") apply false
 }
@@ -33,6 +34,14 @@ tasks.register("writeCiBuildMatrix") {
         val minecraftVersion = targetProject.property("minecraftVersion").toString()
         val loader = projectName.substringAfterLast("-")
         val javaVersion = targetProject.findProperty("javaVersion")?.toString() ?: "17"
+        val fabricApiVersion = targetProject.findProperty("fabricApiVersion")
+            ?.toString()
+            ?.substringBefore("+")
+            ?: "none"
+        val runMcRuntimeTest = targetProject.findProperty("ciMcRuntimeTest")
+            ?.toString()
+            ?.toBooleanStrictOrNull()
+            ?: true
         val modloader = if (loader == "neo") "neoforge" else loader
         val mcRuntimeTest = when (loader) {
             "forge" -> "lexforge"
@@ -54,15 +63,17 @@ tasks.register("writeCiBuildMatrix") {
         if (!javaVersion.matches(Regex("\\d+"))) {
             throw GradleException("Project '$projectName' has invalid javaVersion '$javaVersion'")
         }
-
         mapOf(
             "subproject" to projectName,
+            "project_dir" to targetProject.projectDir.relativeTo(rootProject.projectDir).invariantSeparatorsPath,
             "loader" to loader,
             "minecraft" to minecraftVersion,
             "java" to javaVersion,
+            "fabric_api" to fabricApiVersion,
             "supports_game_test_server" to supportsGameTestServer,
             "run_game_test_server" to (supportsGameTestServer && loader in setOf("forge", "neo")),
             "run_server" to !supportsGameTestServer,
+            "run_mc_runtime_test" to runMcRuntimeTest,
             "modloader" to modloader,
             "mc_runtime_test" to mcRuntimeTest,
             "artifact_regex" to ".*$loader.*",
@@ -95,7 +106,7 @@ val modVersion = providers.fileContents(layout.projectDirectory.file("version.tx
     .get()
 
 subprojects {
-    val modGroupId: String by project
+    val modGroupId = project.property("modGroupId").toString()
 
     extensions.extraProperties["modVersion"] = modVersion
     version = modVersion
@@ -106,6 +117,16 @@ subprojects {
     }
 
     repositories {
+        maven {
+            name = "Minecraft Libraries"
+            url = uri("https://libraries.minecraft.net")
+        }
+
+        maven {
+            name = "MinecraftForge"
+            url = uri("https://maven.minecraftforge.net/")
+        }
+
         mavenCentral()
 
 //        flatDir {
@@ -144,6 +165,7 @@ subprojects {
             }
             filter {
                 includeGroupByRegex("fuzs\\..+")
+                includeModule("net.minecraftforge", "forgeconfigapiport-fabric")
             }
         }
 
